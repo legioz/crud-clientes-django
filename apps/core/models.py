@@ -1,5 +1,5 @@
 from django.db import models
-from core import managers
+from apps.core import managers
 from django.contrib.auth.models import AbstractUser
 
 

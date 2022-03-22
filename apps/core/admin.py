@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core import models
+from apps.core import models
 
 admin.site.site_header = "CRUD Administration"
 admin.site.site_title = "CRUD Portal Admin"
