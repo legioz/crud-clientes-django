@@ -4,7 +4,7 @@ from apps.core.models import User
 from django.views.generic import ListView, TemplateView, RedirectView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, logout, authenticate
-from django.db.models import Q, Prefetch
+from django.db.models import Q
 
 
 class IndexView(TemplateView):
@@ -83,8 +83,8 @@ class CustomerView(LoginRequiredMixin, TemplateView):
     context = {
         "customer_list": User.objects.filter().order_by("id") 
     }
-
-    def get(self, *args, **kwargs):
+    
+    def get_queryset(self, *args, **kwargs):
         if self.request.user.is_superuser:
             query = Q()
             query_string = self.request.GET.get("query")
@@ -96,11 +96,15 @@ class CustomerView(LoginRequiredMixin, TemplateView):
                 query |= Q(first_name__icontains=query_string)
                 query |= Q(last_name__icontains=query_string)
             customer_list = User.objects.filter(query).prefetch_related("user_phone").order_by("id")
-            print(customer_list.first().user_phone.all())
-            self.template_name = "admin/customer.html"
         else:
             customer_list = User.objects.filter(id=self.request.user.id)
-        self.context.update({"customer_list": customer_list})
+        return customer_list
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_superuser:
+            self.template_name = "admin/customer.html"
+        queryset = self.get_queryset()
+        self.context.update({"customer_list": queryset})
         return render(self.request, self.template_name, self.context)
 
     def post(self, *args, **kwargs):
