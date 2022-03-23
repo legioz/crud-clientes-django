@@ -4,6 +4,7 @@ from apps.core.models import User
 from django.views.generic import ListView, TemplateView, RedirectView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, logout, authenticate
+from django.db.models import Q, Prefetch
 
 
 class IndexView(TemplateView):
@@ -11,7 +12,10 @@ class IndexView(TemplateView):
     context = {}
 
     def get(self, *args, **kwargs):
-        return render(self.request, self.template_name, self.context)
+        if self.request.user.is_authenticated:
+            return redirect("customer")
+        else:
+            return redirect("login")
 
     def post(self, *args, **kwargs):
         return redirect("index")
@@ -22,7 +26,8 @@ class LoginView(TemplateView):
     context = {}
 
     def get(self, *args, **kwargs):
-        # self.context.update(kwargs)
+        if self.request.user.is_authenticated:
+            return redirect("customer")
         return render(self.request, self.template_name, self.context)
 
     def post(self, *args, **kwargs):
@@ -39,13 +44,13 @@ class LoginView(TemplateView):
             return redirect("login", error=True)
 
 
-class LogoutView(RedirectView):
+class LogoutView(LoginRequiredMixin, RedirectView):
     def get(self, *args, **kwargs):
         logout(self.request)
         return redirect("index")
 
 
-class RegisterView(TemplateView):
+class RegisterView(LoginRequiredMixin, TemplateView):
     template_name = "customer/register.html"
     context = {}
 
@@ -70,17 +75,33 @@ class RegisterView(TemplateView):
         for current_phone in phone_list:
             phone = models.Phone.objects.create(user=user, number=current_phone)
             phone.save()
-        return redirect("index")
+        return redirect("login")
 
 
 class CustomerView(LoginRequiredMixin, TemplateView):
     template_name = "customer/customer.html"
-    context = {}
+    context = {
+        "customer_list": User.objects.filter().order_by("id") 
+    }
 
     def get(self, *args, **kwargs):
+        if self.request.user.is_superuser:
+            query = Q()
+            query_string = self.request.GET.get("query")
+            is_active = self.request.GET.get("is_active")
+            if is_active is not None:
+                query &= Q(is_active=True)
+            if query_string is not None:
+                query |= Q(email__icontains=query_string)
+                query |= Q(first_name__icontains=query_string)
+                query |= Q(last_name__icontains=query_string)
+            customer_list = User.objects.filter(query).prefetch_related("user_phone").order_by("id")
+            print(customer_list.first().user_phone.all())
+            self.template_name = "admin/customer.html"
+        else:
+            customer_list = User.objects.filter(id=self.request.user.id)
+        self.context.update({"customer_list": customer_list})
         return render(self.request, self.template_name, self.context)
 
     def post(self, *args, **kwargs):
-        user = User.objects.create_user(kwargs)
-        print(user)
-        return redirect()
+        return redirect("index")

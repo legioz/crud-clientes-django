@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block content %}
+<br>
+<div class="container d-flex justify-content-center mt-1">
+  <form method="get" action="">
+    <div class="mb-3 input-group">
+      <input type="text" class="form-control" id="query" name="query" placeholder="Pesquisar">
+      <select class="form-select" id="is_active" name="is_active">
+        <option selected disabled>Status...</option>
+        <option value="1">Ativo</option>
+        <option value="0">Inativo</option>
+      </select>
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="submit">Pesquisar</button>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="container mt-4">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Email</th>
+        <th scope="col">Nome Completo</th>
+        <th scope="col">Nascimento</th>
+        <th scope="col">Detalhes</th>
+        <th scope="col">Ativo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for element in customer_list %}
+      <tr>
+        <th scope="row">{{ element.id }}</th>
+        <td>{{ element.email }}</td>
+        <td>{{ element.first_name }} {{ element.last_name }}</td>
+        <td>{{ element.birth }}</td>
+        <td>
+          <button class="btn text-warning" data-bs-toggle="modal" data-bs-target="#address-modal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-signpost-2-fill" viewBox="0 0 16 16">
+              <path
+                d="M7.293.707A1 1 0 0 0 7 1.414V2H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h5v1H2.5a1 1 0 0 0-.8.4L.725 8.7a.5.5 0 0 0 0 .6l.975 1.3a1 1 0 0 0 .8.4H7v5h2v-5h5a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H9V6h4.5a1 1 0 0 0 .8-.4l.975-1.3a.5.5 0 0 0 0-.6L14.3 2.4a1 1 0 0 0-.8-.4H9v-.586A1 1 0 0 0 7.293.707z" />
+            </svg>
+          </button>
+          <div class="modal fade" id="address-modal" tabindex="-1" aria-labelledby="address-modal-label"
+            aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="address-modal-label">Endereços</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="container">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Endereço</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for address in element.user_address.all %}
+                        <tr>
+                          <td>{{ address }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn text-info" data-bs-toggle="modal" data-bs-target="#phones-modal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-telephone-fill" viewBox="0 0 16 16">
+              <path fill-rule="evenodd"
+                d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
+            </svg>
+          </button>
+          <div class="modal fade" id="phones-modal" tabindex="-1" aria-labelledby="phones-modal-label"
+            aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="phones-modal-label">Telefones</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="container">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Número</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for phone in element.user_phone.all %}
+                        <tr>
+                          <td scope="">{{ phone }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>
+          {% if element.is_active %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+            class="bi bi-check-lg text-success" viewBox="0 0 16 16">
+            <path
+              d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z" />
+          </svg>
+          {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+            class="bi bi-x-lg text-danger" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z" />
+            <path fill-rule="evenodd"
+              d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z" />
+          </svg>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-end">
+    <a class="btn btn-success" href="{% url 'register' %}">Adicionar Cliente</a>
+  </div>
+</div>
+
+{% endblock %}
