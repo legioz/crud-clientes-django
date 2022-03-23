@@ -80,9 +80,7 @@ class RegisterView(LoginRequiredMixin, TemplateView):
 
 class CustomerView(LoginRequiredMixin, TemplateView):
     template_name = "customer/customer.html"
-    context = {
-        "customer_list": User.objects.filter().order_by("id") 
-    }
+    context = {"customer_list": User.objects.filter().order_by("id")}
 
     def get_queryset(self, *args, **kwargs):
         if self.request.user.is_superuser:
@@ -95,7 +93,12 @@ class CustomerView(LoginRequiredMixin, TemplateView):
                 query |= Q(last_name__icontains=query_string)
             if is_active is not None and is_active.isnumeric:
                 query &= Q(is_active=int(is_active))
-            customer_list = User.objects.filter(query).prefetch_related("user_phone").order_by("id")
+            customer_list = (
+                User.objects.filter(query)
+                .prefetch_related("user_phone")
+                .prefetch_related("user_address")
+                .order_by("id")
+            )
         else:
             customer_list = User.objects.filter(id=self.request.user.id)
         return customer_list
@@ -104,6 +107,7 @@ class CustomerView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_superuser:
             self.template_name = "admin/customer.html"
         queryset = self.get_queryset()
+        # print(queryset.first().user_address.first())
         self.context.update({"customer_list": queryset})
         return render(self.request, self.template_name, self.context)
 
