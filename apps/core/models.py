@@ -24,7 +24,7 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "User"
 
-    def get_username(self):
+    def get_username(self) -> str:
         return self.email
 
     def __str__(self) -> str:
