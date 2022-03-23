@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section>
+    <div class="container">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient-primary-to-secondary p-4">
+                    <h3 class="modal-title">Cadastrar</h3>
+                </div>
+                <div class="modal-body border-0 p-4">
+                    <form id="register-form" class="needs-validation" method="POST" action="{% url 'register' %}">
+                        {% csrf_token %}
+
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="email" name="email" type="email"
+                                placeholder="email@exemplo.com" required onblur="validate_email(this)"/>
+                            <label for="email">Email</label>
+                            <div class="invalid-feedback">Email inválido!</div>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control" id="first_name" name="first_name" type="text" 
+                                        placeholder="Coloque seu nome aqui" required onblur="validate_name(this, 3)"
+                                        style="text-transform: uppercase" maxlength="50"
+                                    />
+                                    <label for="name">Nome</label>
+                                    <div class="invalid-feedback">Nome inválido!</div>
+                                </div>
+                            </div>
+                            <div class="col-md">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control" id="last_name" name="last_name" type="text"
+                                        placeholder="Coloque seu sobrenome aqui" required onblur="validate_name(this, 3)"
+                                        style="text-transform: uppercase" maxlength="50"
+                                    />
+                                    <label for="last_name">Sobrenome</label>
+                                    <div class="invalid-feedback">Sobrenome inválido!</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="birth" name="birth" type="date"
+                                placeholder="Data de Nascimento" max="{% now 'Y-m-d' %}" required />
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input id="password" name="password" class="form-control" type="password"
+                                placeholder="*******" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required 
+                                onblur="check_valid_password(this)"/>
+                            <label for="password">Senha</label>
+                            <div class="invalid-feedback">Senha não válida</div>
+                            <div class="invalid-feedback" id="invalid_password_confirm_msg"></div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input id="confirm_password" name="confirm_password" class="form-control" type="password"
+                                placeholder="*******" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required
+                                onblur="check_equal_password();" />
+                            <label for="confirm_password">Confirmar Senha</label>
+                            <div class="invalid-feedback">As senhas não são iguais! Validar confirmação.</div>
+                        </div>
+                        <hr>
+                        
+                        <div class="mb-3" id="address">
+                            <label for="address" class="form-label fw-bolder">Addresses</label>
+                        </div>
+                        <button onclick="add_address(this)" class="btn btn-secondary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                        </button>
+                        <hr>
+                        <div class="mb-3 mt-3" id="phones">
+                            <label for="phone" class="form-label fw-bolder">Phones</label>
+                        </div>
+                        <button onclick="add_phone(this)" class="btn btn-secondary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                              </svg>
+                        </button>
+
+                        <hr id="hr-address">
+                        <div class="form-floating mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" name="accept" type="checkbox" required>
+                                Eu li e aceito os <a href="https://lcorp.dev">termos e condições</a>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button-->
+                        <br>
+                        <div class="d-grid"><button class="btn btn-primary rounded-pill btn-lg" id="submit_button"
+                                type="submit">Cadastrar</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+{% if ok == False %}
+<script>
+    alert('\n Dados inválidos!\n Valide antes de tentar novamente!');
+</script>
+{% endif %}
+<script>
+var input_fields = document.querySelectorAll(".form-control")
+var button = document.querySelector("#submit_button")
+
+input_fields.forEach(function (input_item) {
+    input_item.addEventListener("input", function () {
+        if (input_item.value.length > 3) {
+            button.disabled = false
+            button.className = " btn btn-primary rounded-pill btn-lg enabled"
+
+        }
+    })
+})
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+ charactersLength));
+   }
+   return result;
+}
+
+function validation() {
+    var email = document.querySelector("#email")
+    var first_name = document.querySelector("#first_name")
+    var last_name = document.querySelector("#last_name")
+    var first_name_text = document.querySelector("#first_name_text")
+
+}
+
+validation();
+
+function add_address(params) {
+    lastInputField = makeid(20);
+    $("<input type='text' maxlength='30' class='form-control mt-1' name='address" + lastInputField + "'>").appendTo($("#address"));
+}
+
+function add_phone(params) {
+    lastInputField = makeid(20);
+    $("<input type='number' maxlength='250' class='form-control mt-1' name='phone" + lastInputField + "'>").appendTo($("#phones"));
+}
+
+</script>
+{% endblock %}
