@@ -83,18 +83,18 @@ class CustomerView(LoginRequiredMixin, TemplateView):
     context = {
         "customer_list": User.objects.filter().order_by("id") 
     }
-    
+
     def get_queryset(self, *args, **kwargs):
         if self.request.user.is_superuser:
             query = Q()
             query_string = self.request.GET.get("query")
             is_active = self.request.GET.get("is_active")
-            if is_active is not None:
-                query &= Q(is_active=True)
             if query_string is not None:
                 query |= Q(email__icontains=query_string)
                 query |= Q(first_name__icontains=query_string)
                 query |= Q(last_name__icontains=query_string)
+            if is_active is not None and is_active.isnumeric:
+                query &= Q(is_active=int(is_active))
             customer_list = User.objects.filter(query).prefetch_related("user_phone").order_by("id")
         else:
             customer_list = User.objects.filter(id=self.request.user.id)
